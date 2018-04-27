@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'iak0#1m$ix)n0krj)o8zpd^b=4a0cixr*by2u(mo7du$&-8pp$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -183,5 +183,6 @@ JWT_AUTH = {
 }
 
 FAIR_PER_KM = 8.0
+POOL_FAIR_PER_KM = 4.0
 
 django_heroku.settings(locals())

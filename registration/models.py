@@ -8,10 +8,10 @@ class User(AbstractUser):
     long_position = models.DecimalField(max_digits=8, decimal_places=5, null=True)
     lat_position = models.DecimalField(max_digits=8, decimal_places=5, null=True)
     city = models.CharField(max_length=100, default="None")
+    on_ride = models.BooleanField(default=False)
+
 class Driver(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    on_ride = models.BooleanField(default=False)
 
 class Rider(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    on_ride = models.BooleanField(default=False)

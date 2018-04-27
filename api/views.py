@@ -1,31 +1,41 @@
+from django.contrib.auth import logout, get_user
+from rest_framework import status
+# from booking.models import Booking
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from api.serializer import (UserSerializer,
                             DriverSerializer,
                             RiderSerializer,
                             BookingSerializer)
 from api.utils.view_utils import (decode_body,
                                   update_geo,
-                                  get_my_ride,
                                   get_fair,
-                                  end_ride)
+                                  end_ride_driver,
+                                  end_ride_rider,
+                                  get_driver_ride,
+                                  get_rider_ride
+                                  )
 from booking.services import driverservices
 from registration.models import User, Driver, Rider
-# from booking.models import Booking
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from registration.permissions import (
     DriverPermission,
-    RiderPermission
+    RiderPermission,
+    NotOnRide
 )
-from django.contrib.auth import logout
+
 
 ds = driverservices.FindDriver()
+
+#logout view
 
 
 def logout_view(request):
     logout(request)
+
+# registrations views
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -68,10 +78,12 @@ class RiderViewSet(APIView):
         return Response({"status": "fail", "error": serializer.error_messages},
                         status=status.HTTP_400_BAD_REQUEST)
 
+# Rider side Views
+
 
 class BookingPoolViewSet(APIView):
 
-    permission_classes = (IsAuthenticated, RiderPermission,)
+    permission_classes = (IsAuthenticated, RiderPermission, NotOnRide)
 
     def post(self, request):
         body_data = decode_body(request)
@@ -94,6 +106,8 @@ class BookingPoolViewSet(APIView):
                     "to_long_position": to_long,
                     "to_lat_position": to_lat,
                     "status": "start",
+                    "distance": i[1],
+                    "fair": get_fair(i[1], pool=True),
                     "driver": i[0],
                     "rider": request.user
                  }
@@ -111,13 +125,14 @@ class BookingPoolViewSet(APIView):
                         "status": "success",
                         "msg": "Driver is on the way",
                         "driver": selected_driver,
+                        "fair": booking.fair
                     })
         return Response({"status": "fail", "error": "no driver near you"})
 
 
 class BookingViewSet(APIView):
 
-    permission_classes = (IsAuthenticated, RiderPermission,)
+    permission_classes = (IsAuthenticated, RiderPermission, NotOnRide)
 
     def post(self, request):
         body_data = decode_body(request)
@@ -149,16 +164,80 @@ class BookingViewSet(APIView):
                 ds.del_driver_from_pool(i[0])
                 print(ds.del_geo(city, i[0]))
                 selected_driver = i[0]
-                return Response({"status": "success",
-                                 "msg": "Driver is on the way",
-                                 "driver": selected_driver
-                                 })
+                return Response({
+                    "status": "success",
+                    "msg": "Driver is on the way",
+                    "driver": selected_driver,
+                    "fair": booking.fair
+                 })
         return Response({"status": "fail", "error": "no driver near you"})
+
+
+class RiderAPI(APIView):
+
+    permission_classes = (IsAuthenticated, RiderPermission,)
+
+    def get(self, request):
+        err, bookings, current_ride = get_driver_ride(request.user)
+        if err:
+            return Response({
+                "status": "fail",
+                "error": err
+            })
+        booking_serial = BookingSerializer(bookings, many=True)
+        current_serial = BookingSerializer(current_ride, many=True)
+        return Response({
+            "status": "success",
+            "rides": booking_serial,
+            "current_ride": current_serial
+         })
+
+    def post(self, request):
+        body_data = decode_body(request)
+        update_geo(body_data, request.user)
+
+        return Response({
+            "status": "success",
+            "msg": "updated geo position",
+         })
+
+
+class RiderEndApi(APIView):
+    def post(self, request):
+        err, booking = end_ride_rider(request.user)
+        if not booking:
+            return Response({
+                "status": "fail",
+                "error": err
+            })
+        return Response({
+            "status": "success",
+            "msg": "Thank You for choosing us",
+            "fair": booking.fair
+         })
+
+# Driver side views
 
 
 class DriverAPI(APIView):
 
     permission_classes = (IsAuthenticated, DriverPermission,)
+
+    def get(self, request):
+        err, bookings, current_ride = get_driver_ride(request.user)
+        if err:
+            return Response({
+                "status": "fail",
+                "error": err
+            })
+        booking_serial = BookingSerializer(bookings, many=True)
+        current_serial = BookingSerializer(current_ride, many=True)
+        return Response({
+            "status": "success",
+            "msg": "Thank You for choosing us",
+            "rides": booking_serial,
+            "current_ride": current_serial
+         })
 
     def post(self, request):
         body_data = decode_body(request)
@@ -175,14 +254,22 @@ class DriverAPI(APIView):
         return Response({"status": "success", "msg": "location updated"})
 
 
-class CompletedRide(APIView):
-    def get(self, request):
-        rides, on_ride, current_ride = get_my_ride(request, 'rider')
-        print(rides, on_ride, current_ride)
-        if not on_ride:
-            return Response({"success": "fail", "error": "you are not currently on ride"})
-        end_ride(current_ride)
-        return Response({"successs"})
+class DriverEndApi(APIView):
+    def post(self, request):
+        body_data = decode_body(request)
+        err, booking = end_ride_driver(body_data, request.user)
+        if not booking:
+            return Response({
+                "status": "fail",
+                "error": err
+            })
+        return Response({
+            "status": "success",
+            "msg": "Thank You for choosing us",
+            "fair": booking.fair
+         })
+
+# social Auth
 
 
 class SocialAuth(APIView):
@@ -190,6 +277,25 @@ class SocialAuth(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        print(request)
-        print(request.data, request.user)
-        return Response('success')
+        if not request.GET.get('param'):
+            return Response({
+                "status": "fail",
+                "error": "param attribute is require"
+            })
+        [long, lat, city,type_user] = request.GET.get("param").split(",")
+        if not long or not lat or not type_user or not city:
+            return Response({
+                "status": "fail",
+                "error": "param attribute is long, lat, city, type(driver, rider) require"
+            })
+        request.user.long_position, request.user.lat_position = long, lat
+        request.user.city = city
+        request.user.save()
+        if type_user == "driver":
+            Driver(user=get_user(request)).save()
+        elif type_user == "rider":
+            Rider(user=get_user(request)).save()
+        else:
+            return Response({"status": "fail", "error": "type can be driver/rider"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "success", "msg": "signup success"}, status=status.HTTP_201_CREATED)

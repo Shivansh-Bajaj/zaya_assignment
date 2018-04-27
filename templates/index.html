@@ -3,6 +3,15 @@
   <title>Social login with django</title>
  </head>
  <body>
+  <form action="/action_page.php">
+  First name:<br>
+  <input type="text" name="firstname" value="Mickey">
+  <br>
+  Last name:<br>
+  <input type="text" name="lastname" value="Mouse">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
    <a href="{% url 'social:begin' 'google-oauth2' %}?next=/api/social_auth/complete/?cod=19.07600,72.87770">Google+</a>
  </body>
 </html>
