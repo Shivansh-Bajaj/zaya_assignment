@@ -93,7 +93,7 @@ Request:
    }
 ```
 
-![Alt Text](./READMEIMG/driver_create.gif)
+![Alt Text](http://res.cloudinary.com/dnp9yrx92/image/upload/v1524924398/driver_create.gif)
 
 Rider:
 
