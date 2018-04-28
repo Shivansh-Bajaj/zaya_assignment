@@ -33,7 +33,7 @@ resful: djangorestframework
 
 ### Data Base Schema:  
 
-![Alt Text](./READMEIMG/er.jpeg)
+![Alt Text](http://res.cloudinary.com/dnp9yrx92/image/upload/v1524924396/er.jpg)
 
 ### Cache:  
 
@@ -115,7 +115,7 @@ Request:
 
 ```
 
-![Alt Text](./READMEIMG/rider_create.gif)
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924399/rider_create.gif)
 
 ####Authenticate JWT
 
@@ -147,6 +147,8 @@ This token is necessary for all the request ahead and needed to be passed in hea
     content-type: "multipart/form-data",
     Authorization: "JWT <token>"
 ```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924398/jwtauthenticate.gif)
+
 
 ## Driver Side APIs
 
@@ -248,6 +250,8 @@ Response:
         "error": "if and error"
     }
 ```
+
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924396/driver_start.png)
 
 ### Driver Complete ride Api
 URL: /api/driver/complete/
