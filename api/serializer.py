@@ -6,12 +6,11 @@ from rest_framework import serializers
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ('username', "email", 'long_position', 'lat_position', 'password', 'city', 'on_ride')
+        fields = ('username', 'long_position', 'lat_position', 'password', 'city', 'on_ride')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User(
-            email=validated_data['email'],
             username=validated_data['username'],
             long_position=validated_data['long_position'],
             lat_position=validated_data['lat_position'],
@@ -26,12 +25,14 @@ class BookingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Booking
         fields = ('from_lat_position', 'from_long_position',
-                  'to_long_position', 'to_lat_position', 'status', 'distance', 'fair')
+                  'to_long_position', 'to_lat_position', 'status', 'distance', 'fair', 'seats', 'created_at')
 
     def create(self, validated_data):
         try:
             driver_user = User.objects.get(username=validated_data['driver'])
             driver = Driver.objects.get(user=driver_user)
+            driver_user.on_ride = True
+            driver_user.save()
         except Exception as e:
             raise e
 
@@ -43,11 +44,14 @@ class BookingSerializer(serializers.HyperlinkedModelSerializer):
             status=validated_data["status"],
             distance=validated_data["distance"],
             fair=validated_data["fair"],
-            driver=driver
+            driver=driver,
+            seats=validated_data["seats"]
         )
         booking.save()
         try:
             rider = Rider.objects.get(user=validated_data['rider'])
+            validated_data['rider'].user.on_ride = True
+            validated_data['rider'].save()
         except Exception as e:
             raise e
         RiderBookingTable(booking=booking, rider=rider).save()
@@ -65,6 +69,8 @@ class DriverSerializer(serializers.HyperlinkedModelSerializer):
 
         user_data = validated_data.pop('user')
         user = UserSerializer.create(UserSerializer(), validated_data=user_data)
+        user.is_driver = True
+        user.save()
         driver, created = Driver.objects.update_or_create(user=user)
         return driver
 
@@ -79,5 +85,7 @@ class RiderSerializer(serializers.HyperlinkedModelSerializer):
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user = UserSerializer.create(UserSerializer(), validated_data=user_data)
+        user.is_rider = True
+        user.save()
         rider, created = Rider.objects.update_or_create(user=user)
         return rider

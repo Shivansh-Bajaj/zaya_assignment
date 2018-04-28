@@ -4,12 +4,13 @@ from rest_framework import permissions
 
 class DriverPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        return Driver.objects.filter(user=request.user).exists()
+        return request.user.is_driver
 
 class RiderPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        return Rider.objects.filter(user=request.user).exists()
+        return request.user.is_rider
 
 class NotOnRide(permissions.BasePermission):
     def has_permission(self, request, view):
+        print(request.user.on_ride, "permissions")
         return not request.user.on_ride

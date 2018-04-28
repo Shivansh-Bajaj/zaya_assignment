@@ -23,6 +23,7 @@ class Booking(models.Model):
     status = models.CharField(choices=status_choice, default='wait', max_length=5)
     distance = models.FloatField(default=2.0)
     fair = models.FloatField(default=16.0)
+    seats = models.IntegerField(default=4)
 
 
 # class DriverBookingTable(models.Model):

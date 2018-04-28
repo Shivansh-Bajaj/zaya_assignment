@@ -6,6 +6,7 @@ from cabbookingapp.settings import FAIR_PER_KM, POOL_FAIR_PER_KM
 
 def decode_body(request):
     body_data = {}
+    print(request.POST)
     body_unicode = request.body.decode('utf-8')
     print(body_unicode)
     if body_unicode != '':
@@ -96,9 +97,14 @@ def end_ride_rider(user):
         return "no ride found", None
     current_ride = bookings.last()
     current_ride.booking.driver.user.on_ride = False
+    current_ride.booking.driver.user.long_position = current_ride.booking.to_long_position
+    current_ride.booking.driver.user.lat_position = current_ride.booking.to_lat_position
     current_ride.booking.driver.user.save()
     current_ride.booking.status = "end"
     current_ride.booking.save()
+    user.lat_position = current_ride.booking.to_lat_position
+    user.long_position = current_ride.booking.to_long_position
+    user.save()
     return None, current_ride.booking
 
 
@@ -117,6 +123,8 @@ def end_ride_driver(body_data, user):
         raise e
     if len(riders) == 1:
         riders[0].rider.user.on_ride = False
+        riders[0].rider.user.lat_position = booking.to_lat_position
+        riders[0].rider.user.long_position = booking.to_long_position
         riders[0].rider.user.save()
     elif body_data.rider_name not in ['', None]:
         for i in riders:
@@ -127,12 +135,16 @@ def end_ride_driver(body_data, user):
         if rider == None:
             return "rider_name not found", None
         rider.rider.user.on_ride = False
+        rider.rider.user.lat_position = booking.to_lat_position
+        rider.rider.user.long_position = booking.to_long_position
         rider.rider.user.save()
     else:
         return "rider_name field required in pool booking", None
     booking.status = "end"
     booking.save()
     driver.user.on_ride = False
+    driver.user.long_position = booking.to_long_position
+    driver.user.lat_position = booking.to_lat_position
     driver.user.save()
     return None, booking
 

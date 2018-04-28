@@ -33,7 +33,7 @@ ds = driverservices.FindDriver()
 
 
 def logout_view(request):
-    logout(request)
+    return logout(request)
 
 # registrations views
 
@@ -85,21 +85,24 @@ class BookingPoolViewSet(APIView):
 
     permission_classes = (IsAuthenticated, RiderPermission, NotOnRide)
 
-    def post(self, request):
+    def post(self, request, format=None):
         body_data = decode_body(request)
-        if not body_data.get('to_long') and not body_data.get('to_lat') and not body_data.get('seats'):
-            return Response({"status": "fail", "msg": "no destination specified"})
+        if not body_data.get('to_long') or not body_data.get('to_lat') or \
+                not body_data.get('city') or not body_data.get('seats'):
+            return Response({"status": "fail", "msg": "to_lang, to_lat, seats, city params require"})
         if body_data.get('seats') > 2:
             return Response({"status": "fail", "msg": "for pool only 2 seats are allowed"})
         long, lat, city = update_geo(body_data, request.user)
         to_long = body_data.get('to_long')
         to_lat = body_data.get('to_lat')
         drivers = ds.find_nearest(city, long, lat)
+        print(city, long, lat, drivers)
         if len(drivers) == 0:
             return Response({"status": "fail", "error": "no driver near you"})
         for i in drivers:
             seats = int(ds.get_driver_seats(i[0]) or 0)
-            if seats <= body_data.get('seats'):
+            print(seats)
+            if seats >= int(body_data.get('seats')):
                 serial = {
                     "from_long_position": long,
                     "from_lat_position": lat,
@@ -109,7 +112,8 @@ class BookingPoolViewSet(APIView):
                     "distance": i[1],
                     "fair": get_fair(i[1], pool=True),
                     "driver": i[0],
-                    "rider": request.user
+                    "rider": request.user,
+                    "seats": int(body_data.get('seats'))
                  }
                 booking = BookingSerializer(data=serial)
                 if booking.is_valid(raise_exception=ValueError):
@@ -155,6 +159,7 @@ class BookingViewSet(APIView):
                     "driver": i[0],
                     "rider": request.user,
                     "distance": i[1],
+                    "seats": 4,
                     "fair": get_fair(i[1])
                  }
                 print(serial)
@@ -178,7 +183,7 @@ class RiderAPI(APIView):
     permission_classes = (IsAuthenticated, RiderPermission,)
 
     def get(self, request):
-        err, bookings, current_ride = get_driver_ride(request.user)
+        err, bookings, current_ride = get_rider_ride(request.user)
         if err:
             return Response({
                 "status": "fail",
@@ -188,11 +193,11 @@ class RiderAPI(APIView):
         current_serial = BookingSerializer(current_ride, many=True)
         return Response({
             "status": "success",
-            "rides": booking_serial,
-            "current_ride": current_serial
+            "rides": booking_serial.data,
+            "current_ride": current_serial.data
          })
 
-    def post(self, request):
+    def put(self, request):
         body_data = decode_body(request)
         update_geo(body_data, request.user)
 
@@ -204,7 +209,12 @@ class RiderAPI(APIView):
 
 class RiderEndApi(APIView):
     def post(self, request):
+        body_data = decode_body(request)
         err, booking = end_ride_rider(request.user)
+        long, lat, city = update_geo(body_data, request.user)
+        current_seats = ds.get_driver_seats(request.user)
+        ds.add_geo(city, long, lat, request.user)
+        ds.set_driver_seats(request.user, int(current_seats or 0) + booking.seats)
         if not booking:
             return Response({
                 "status": "fail",
@@ -235,16 +245,10 @@ class DriverAPI(APIView):
         return Response({
             "status": "success",
             "msg": "Thank You for choosing us",
-            "rides": booking_serial,
-            "current_ride": current_serial
+            "rides": booking_serial.data,
+            "current_ride": current_serial.data
          })
 
-    def post(self, request):
-        body_data = decode_body(request)
-        long, lat, city = update_geo(body_data, request.user)
-        ds.add_geo(city, long, lat, request.user)
-        ds.set_driver_seats(request.user, 4)
-        return Response({"status": "success", "msg": "you are in queue we are searching for rider near you"})
 
     def put(self, request):
         body_data = decode_body(request)
@@ -254,10 +258,48 @@ class DriverAPI(APIView):
         return Response({"status": "success", "msg": "location updated"})
 
 
+class DriverStartApi(APIView):
+    permission_classes = (IsAuthenticated, DriverPermission, NotOnRide)
+
+    def post(self, request):
+        body_data = decode_body(request)
+        long, lat, city = update_geo(body_data, request.user)
+        print(long, lat, city)
+        drivers = ds.find_nearest(city, long, lat)
+        print(city, long, lat, drivers)
+        ds.add_geo(city, long, lat, request.user)
+        ds.set_driver_seats(request.user, 4)
+        return Response({"status": "success", "msg": "you are in queue we are searching for rider near you"})
+
+
+class DriverStopApi(APIView):
+    permission_classes = (IsAuthenticated, DriverPermission, NotOnRide)
+
+    def post(self, request):
+        # body_data = decode_body(request)
+        # long, lat, city = update_geo(body_data, request.user)
+        # print(long, lat, city)
+        # drivers = ds.find_nearest(city, long, lat)
+        # print(city, long, lat, drivers)
+        # ds.add_geo(city, long, lat, request.user)
+        # ds.set_driver_seats(request.user, 4)
+        ds.del_driver_from_pool(request.user.username)
+        ds.del_geo(request.user.city, request.user.username)
+        return Response({"status": "success", "msg": "thank you for working with us"})
+
+
 class DriverEndApi(APIView):
+    permission_classes = (IsAuthenticated, DriverPermission, )
+
     def post(self, request):
         body_data = decode_body(request)
         err, booking = end_ride_driver(body_data, request.user)
+        long, lat, city = update_geo(body_data, request.user)
+        # if len(ds.match(city, request.user)[1]) != 0:
+        #     ds.add_geo(city, long, lat, request.user)
+        current_seats = ds.get_driver_seats(request.user)
+        ds.add_geo(city, long, lat, request.user)
+        ds.set_driver_seats(request.user, int(current_seats or 0) + booking.seats)
         if not booking:
             return Response({
                 "status": "fail",
@@ -293,8 +335,12 @@ class SocialAuth(APIView):
         request.user.save()
         if type_user == "driver":
             Driver(user=get_user(request)).save()
+            request.user.is_driver = True
+            request.user.save()
         elif type_user == "rider":
             Rider(user=get_user(request)).save()
+            request.user.is_rider = True
+            request.user.save()
         else:
             return Response({"status": "fail", "error": "type can be driver/rider"},
                             status=status.HTTP_400_BAD_REQUEST)

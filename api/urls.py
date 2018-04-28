@@ -14,29 +14,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-from django.contrib.auth.views import login, logout
+from django.contrib.auth import logout
 from rest_framework import routers
 from api import views
 from rest_framework_jwt.views import (
     obtain_jwt_token,
     refresh_jwt_token)
-# from rest_framework_simplejwt.views import (
-#     TokenObtainPairView,
-#     TokenRefreshView,
-# )
+
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
-# router.register(r'driver', views.DriverViewSet, base_name='driver')
-# router.register(r'rider', views.RiderViewSet, base_name='rider')
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^driver/$',
         views.DriverViewSet.as_view()),
     url(r'^rider/$',
         views.RiderViewSet.as_view()),
-    url(r'^login/$', login),
-    url(r'^logout/$', logout),
     url(r'^rider/book/$', views.BookingViewSet.as_view()),
+    url(r'^driver/book/$', views.DriverStartApi.as_view()),
     url(r'^rider/book/pool/$', views.BookingPoolViewSet.as_view()),
     url(r'^driver/book/complete/$', views.DriverEndApi.as_view()),
     url(r'^rider/book/complete/$', views.RiderEndApi.as_view()),
@@ -45,7 +39,6 @@ urlpatterns = [
     url(r'^rider/profile/$', views.RiderAPI.as_view()),
     url(r'^token/$', obtain_jwt_token, name='token_obtain_pair'),
     url(r'^token/refresh/$', refresh_jwt_token, name='token_refresh'),
-    url(r'^logout/$', views.logout_view),
-
+    url(r'^logout/$', logout, name='logout'),
 ]
 

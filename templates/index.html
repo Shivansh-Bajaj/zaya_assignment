@@ -1,17 +1,59 @@
 <html>
  <head>
-  <title>Social login with django</title>
+  <title>ZAYA cab booking backend app</title>
  </head>
- <body>
-  <form action="/action_page.php">
-  First name:<br>
-  <input type="text" name="firstname" value="Mickey">
-  <br>
-  Last name:<br>
-  <input type="text" name="lastname" value="Mouse">
-  <br><br>
-  <input type="submit" value="Submit">
-</form>
-   <a href="{% url 'social:begin' 'google-oauth2' %}?next=/api/social_auth/complete/?cod=19.07600,72.87770">Google+</a>
+ <h1>Authentication</h1>
+  <h3>Google + social auth</h3>
+  <p>
+  /auth/login/google-oauth2/?next=/api/social_auth/complete/?param=longitude,latitude,city,type<br />
+  here<br />
+   REQUEST PARAMETER:<br />
+   param:longitude,latitude,city,type<br />
+   were<br />
+   longitude: your longitude<br />
+   latitute: your latitude <br />
+   city: city name <br />
+   type: user type (driver / rider) <br />
+   <br />
+   example: Driver: <a href="/auth/login/google-oauth2/?next=/api/social_auth/complete/?param=19.84321,72.85432,mumbai,driver">/auth/login/google-oauth2/?next=/api/social_auth/complete/?param=19.84321,72.85432,mumbai,driver</a> or <br />
+   example: Rider: <a href="/auth/login/google-oauth2/?next=/api/social_auth/complete/?param=19.84321,72.85432,mumbai,driver">/auth/login/google-oauth2/?next=/api/social_auth/complete/?param=19.84321,72.85432,mumbai,rider</a>
+  </p>
+
+ <h3>Auth JWT token</h3>
+ <h4>Create User</h4>
+ <h5>driver</h5>
+ <p>
+  URL: /api/driver/ <br />
+  Method: ['POST'] <br />
+  here <br />
+   REQUEST PARAMETER:
+   username: name of user<br />
+   password: string password<br />
+   lat: your latitude <br />
+   long: your long
+   city: city name <br />
+    </p>
+ <h5>Rider</h5>
+ <p>
+  URL: /api/rider/<br />
+  Method: ['POST'] <br />
+  here<br />
+   REQUEST PARAMETER:
+   username: name of user<br />
+   password: string password<br />
+   lat: your latitude <br />
+   long: your long
+   city: city name <br />
+ </p>
+ <h4>Authenticate JWT</h4>
+ <p>
+  URL: /api/token<br />
+  Method: ['POST']<br />
+  here<br />
+   REQUEST PARAMETER: <br />
+   username: name of user<br />
+   password: string password<br />
+ </p>
  </body>
+
 </html>
