@@ -92,7 +92,7 @@ Request:
        }
    }
 ```
-her
+
 ![Alt Text](http://res.cloudinary.com/dnp9yrx92/image/upload/v1524924398/driver_create.gif)
 
 Rider:
@@ -117,7 +117,7 @@ Request:
 
 ![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924399/rider_create.gif)
 
-####Authenticate JWT
+#### Authenticate JWT
 
 To get JWT based token
 
