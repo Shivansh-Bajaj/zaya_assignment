@@ -21,10 +21,11 @@ from rest_framework_jwt.views import (
     obtain_jwt_token,
     refresh_jwt_token)
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
+
 urlpatterns = [
-    url(r'^', include(router.urls)),
+
+    url(r'^user/$',
+        views.getUser.as_view()),
     url(r'^driver/$',
         views.DriverViewSet.as_view()),
     url(r'^rider/$',

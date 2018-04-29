@@ -1,14 +1,14 @@
 import redis
 from cabbookingapp.settings import GEO_RADIUS
-
+import json
 
 class FindDriver:
     r = None
 
     def __init__(self):
         try:
-            self.r = redis.StrictRedis(host='redis-14057.c14.us-east-1-3.ec2.cloud.redislabs.com', port=14057, password="MULpeyURGoskdhHbIE7EqJAAtyYqss9E", db=0)
-
+            config = json.load(open('booking/services/config_redis.json'))
+            self.r = redis.StrictRedis(host=config.get('host'), port=config.get('port'), password=config.get('password'), db=config.get('db'))
         except Exception as e:
             raise e
 
@@ -41,5 +41,9 @@ class FindDriver:
     def match(self, city, driver):
         return self.r.zscan(city, match=driver)
 
-    def find_distance(self, city, place1, place2):
-        return self.r.geodist(city, place1, place2, unit='km')
+    def find_distance(self, city, place1, long, lat):
+        self.r.geoadd(city, *(long, lat, place1+'_destination'))
+        distance = self.r.geodist(city, place1, place1+'_destination', unit='km')
+        print(city, place1, long, lat, distance)
+        self.r.zrem(city,place1+'_destination')
+        return distance or 0

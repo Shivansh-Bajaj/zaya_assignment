@@ -3,7 +3,6 @@ from registration.models import Driver, Rider
 
 
 
-# Create your models here.
 class Booking(models.Model):
 
     status_choice = (
@@ -13,7 +12,7 @@ class Booking(models.Model):
     )
 
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-    rider = models.ManyToManyField(Rider, through='RiderBookingTable')
+    rider = models.ForeignKey(Rider, on_delete=models.CASCADE)
     from_long_position = models.DecimalField(max_digits=8, decimal_places=5, blank=False, null=False)
     from_lat_position = models.DecimalField(max_digits=8, decimal_places=5, blank=False, null=False)
     to_long_position = models.DecimalField(max_digits=8, decimal_places=5, blank=False, null=False)
@@ -25,15 +24,5 @@ class Booking(models.Model):
     fair = models.FloatField(default=16.0)
     seats = models.IntegerField(default=4)
 
-
-# class DriverBookingTable(models.Model):
-#     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-#     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-class RiderBookingTable(models.Model):
-    rider = models.ForeignKey(Rider, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 

@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'iak0#1m$ix)n0krj)o8zpd^b=4a0cixr*by2u(mo7du$&-8pp$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -140,13 +140,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
+
     'FORM_METHOD_OVERRIDE': None,
     'FORM_CONTENT_OVERRIDE': None,
     'FORM_CONTENTTYPE_OVERRIDE': None,
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'TEST_REQUEST_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
@@ -169,17 +166,9 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "1084273245406-4i3mrj6e4qse7dn39dbkm4mbd69ts10u.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "6tDaZaK72B7ohcfGExbif9Jx"
 
 
-
-# LOGIN_REDIRECT_URL = 'http://localhost:8000/complete/google-oauth2/'
-
-
 SPATIALITE_LIBRARY_PATH='/usr/local/lib/mod_spatialite.dylib'
 
 GEO_RADIUS = 3
-
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-# }
 
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': timedelta(days=1),

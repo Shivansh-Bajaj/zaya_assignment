@@ -1,5 +1,5 @@
 from registration.models import User, Driver, Rider
-from booking.models import Booking, RiderBookingTable
+from booking.models import Booking
 from rest_framework import serializers
 
 
@@ -29,10 +29,14 @@ class BookingSerializer(serializers.HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         try:
+
             driver_user = User.objects.get(username=validated_data['driver'])
             driver = Driver.objects.get(user=driver_user)
             driver_user.on_ride = True
             driver_user.save()
+            rider = Rider.objects.get(user=validated_data['rider'])
+            validated_data['rider'].on_ride = True
+            validated_data['rider'].save()
         except Exception as e:
             raise e
 
@@ -45,16 +49,10 @@ class BookingSerializer(serializers.HyperlinkedModelSerializer):
             distance=validated_data["distance"],
             fair=validated_data["fair"],
             driver=driver,
+            rider=rider,
             seats=validated_data["seats"]
         )
         booking.save()
-        try:
-            rider = Rider.objects.get(user=validated_data['rider'])
-            validated_data['rider'].user.on_ride = True
-            validated_data['rider'].save()
-        except Exception as e:
-            raise e
-        RiderBookingTable(booking=booking, rider=rider).save()
         return booking
 
 

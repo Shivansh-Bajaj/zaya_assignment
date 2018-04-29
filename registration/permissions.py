@@ -12,5 +12,4 @@ class RiderPermission(permissions.BasePermission):
 
 class NotOnRide(permissions.BasePermission):
     def has_permission(self, request, view):
-        print(request.user.on_ride, "permissions")
         return not request.user.on_ride

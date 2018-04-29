@@ -137,6 +137,7 @@ Response:
     "token": <token>
 }
 ```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924398/jwtauthenticate.gif)
 
 
 #### NOTE: Token
@@ -144,10 +145,10 @@ This token is necessary for all the request ahead and needed to be passed in hea
 
 ```
     header:
-    content-type: "multipart/form-data",
+    content-type: "application/json",
     Authorization: "JWT <token>"
 ```
-![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924398/jwtauthenticate.gif)
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023368/auth_token.png)
 
 
 ## Driver Side APIs
@@ -162,7 +163,170 @@ API to retrieve driver rides
 Request:
 ```
     header:
-    content-type: "multipart/form-data",
+    content-type: "application/json",
+    Authorization: "JWT <token>"
+```
+Response:
+```
+    {
+        "status": "success" / "fail"
+        "error": "if any error"
+        "msg": "msg"
+        "bookings": [
+             {
+                "from_lat_position": String,
+                "from_long_position": string",
+                "to_long_position": string,
+                "to_lat_position": string,
+                "status": "start" / "end" / "wait",
+                "distance": <float>,
+                "fair": <float>,
+                "seats": <integer>,
+                "created_at": <date>,
+                "rider": <string>
+            }
+        ]
+        "current_booking": [{
+                "from_lat_position": String,
+                "from_long_position": string",
+                "to_long_position": string,
+                "to_lat_position": string,
+                "status": "start" / "end" / "wait",
+                "distance": <float>,
+                "fair": <float>,
+                "seats": <integer>,
+                "created_at": <date>,
+        }],
+        "current_rider": [{
+           "user": {
+               username: name of user
+               password: string password
+               lat: your latitude
+               long: your long
+               city: city name
+           }
+        }]
+    }
+
+```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023368/driver_profile.png)
+
+METHOD == PUT:
+API to update location, city
+
+Request:
+```
+    header:
+    content-type: "application/json",
+    Authorization: "JWT <token>"
+    body: {
+        "long": <decimal with 5 digits after .>
+        "lat": <decimal with 5 digits after .>
+        "city": <string>
+    }
+```
+
+Response:
+```
+    {
+        "status": "success"/"fail",
+        "msg": "if any message",
+        "error": "if and error"
+    }
+```
+
+### Driver Start Service Api
+URL: /api/driver/book/
+
+METHOD == POST:
+put driver in queue to find rides
+
+Request:
+```
+    header:
+    content-type: "application/json",
+    Authorization: "JWT <token>"
+    body: {
+        "long": <decimal with 5 digits after .> or none(if none then last longitude saved in database will be used)
+        "lat": <decimal with 5 digits after .>(if none then last latitude saved in database will be used)
+        "city": <string>
+    }
+```
+
+Response:
+```
+    {
+        "status": "success"/"fail",
+        "msg": "if any message",
+        "error": "if and error"
+    }
+```
+
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023368/driver_book.png)
+
+### Driver Complete ride Api
+URL: /api/driver/complete/
+
+METHOD == POST:
+complete driver ride with ridername
+Request:
+```
+    header:
+    content-type: "application/json",
+    Authorization: "JWT <token>"
+    body: {
+        "ridername": <string>(ridername)(only if pool ride to specify rider name for which pool need to end)
+    }
+```
+
+Response:
+```
+    {
+        "status": "success"/"fail",
+        "msg": "if any message",
+        "error": "if and error",
+        "fair": "float"
+    }
+```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023367/driver_complete.png)
+
+
+### Driver Stop Service Api
+URL: /api/driver/stop/
+
+METHOD == POST:
+remove driver from queue. So no ride be assign to driver
+
+Request:
+```
+    header:
+    content-type: "application/json",
+    Authorization: "JWT <token>"
+```
+
+Response:
+```
+    {
+        "status": "success"/"fail",
+        "msg": "if any message",
+        "error": "if and error"
+    }
+```
+
+## Rider Services
+
+
+### Rider Profile API:
+
+URL: /api/rider/profile
+
+*METHOD == GET:*
+API to retrieve rider bookings
+
+Request:
+```
+    header:
+    content-type: "application/json",
     Authorization: "JWT <token>"
 ```
 Response:
@@ -200,13 +364,15 @@ Response:
     }
 ```
 
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023369/rider_profile.png)
+
 METHOD == PUT:
 API to update location, city
 
 Request:
 ```
     header:
-    content-type: "multipart/form-data",
+    content-type: "application/json",
     Authorization: "JWT <token>"
     body: {
         "long": <decimal with 5 digits after .>
@@ -224,84 +390,6 @@ Response:
     }
 ```
 
-### Driver Start Service Api
-URL: /api/driver/start/
-
-METHOD == POST:
-put driver in queue to find rides
-
-Request:
-```
-    header:
-    content-type: "multipart/form-data",
-    Authorization: "JWT <token>"
-    body: {
-        "long": <decimal with 5 digits after .> or none(if none then last longitude saved in database will be used)
-        "lat": <decimal with 5 digits after .>(if none then last latitude saved in database will be used)
-        "city": <string>
-    }
-```
-
-Response:
-```
-    {
-        "status": "success"/"fail",
-        "msg": "if any message",
-        "error": "if and error"
-    }
-```
-
-![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1524924396/driver_start.png)
-
-### Driver Complete ride Api
-URL: /api/driver/complete/
-
-METHOD == POST:
-complete driver ride with ridername
-Request:
-```
-    header:
-    content-type: "multipart/form-data",
-    Authorization: "JWT <token>"
-    body: {
-        "ridername": <string>(ridername)(only if pool ride to specify rider name for which pool need to end)
-    }
-```
-
-Response:
-```
-    {
-        "status": "success"/"fail",
-        "msg": "if any message",
-        "error": "if and error",
-        "fair": "float"
-    }
-```
-
-
-### Driver Stop Service Api
-URL: /api/driver/stop/
-
-METHOD == POST:
-remove driver from queue. So no ride be assign to driver
-
-Request:
-```
-    header:
-    content-type: "multipart/form-data",
-    Authorization: "JWT <token>"
-```
-
-Response:
-```
-    {
-        "status": "success"/"fail",
-        "msg": "if any message",
-        "error": "if and error"
-    }
-```
-
-## Rider Services
 
 
 ### Rider book a cab Service Api
@@ -313,7 +401,7 @@ Book a cab
 Request:
 ```
     header:
-    content-type: "multipart/form-data",
+    content-type: "application/json",
     Authorization: "JWT <token>"
     body: {
         "to_long": <decimal with 5 digits after .>
@@ -340,7 +428,7 @@ Book a cab pool
 Request:
 ```
     header:
-    content-type: "multipart/form-data",
+    content-type: "application/json",
     Authorization: "JWT <token>"
     body: {
         "to_long": <decimal with 5 digits after .>
@@ -357,6 +445,7 @@ Response:
         "error": "if and error"
     }
 ```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023368/rider_book_pool.png)
 
 ### rider Complete ride Api
 URL: /api/rider/complete/
@@ -368,7 +457,7 @@ Complete rider ride with driver
 Request:
 ```
     header:
-    content-type: "multipart/form-data",
+    content-type: "application/json",
     Authorization: "JWT <token>"
 
 ```
@@ -382,5 +471,6 @@ Response:
         "fair": "float"
     }
 ```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023368/rider_complete.png)
 
 
