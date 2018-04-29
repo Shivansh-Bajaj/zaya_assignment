@@ -33,7 +33,7 @@ resful: djangorestframework
 
 ### Data Base Schema:  
 
-![Alt Text](http://res.cloudinary.com/dnp9yrx92/image/upload/v1524924396/er.jpg)
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525041357/er1.jpg)
 
 ### Cache:  
 
