@@ -418,6 +418,8 @@ Response:
         "error": "if and error"
     }
 ```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525037922/book_full.png)
+
 
 ### Rider book pool cab Service Api
 URL: /api/rider/book/pool
@@ -474,3 +476,29 @@ Response:
 ![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525023368/rider_complete.png)
 
 
+## Get driver/rider details Api
+URL: /api/user/
+
+
+METHOD == GET:
+GET driver/rider details
+Request:
+```
+    header:
+    content-type: "application/json",
+    Authorization: "JWT <token>"
+
+```
+
+Response:
+```
+    {
+       username: name of user
+       password: string password
+       lat: your latitude
+       long: your long
+       city: city name
+       on_rider: boolean field show True if on ride
+    }
+```
+![Alt Text](https://res.cloudinary.com/dnp9yrx92/image/upload/v1525037922/get_detail.png)
